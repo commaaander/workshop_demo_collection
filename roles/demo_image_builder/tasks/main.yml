@@ -1,0 +1,34 @@
+---
+# tasks file for demo_image_builder
+- name: Generate greeting and store result
+  demo_hello:
+    name: "{{ friend_name }}"
+  register: demo_greeting
+
+- name: Create build directory
+  file:
+    path: "{{ build_dir_path }}"
+    state: directory
+    mode: 0755
+
+- name: Copy Dockerfile
+  copy:
+    src: files/Dockerfile
+    dest: "{{ build_dir_path }}"
+    mode: 0644
+
+- name: Copy custom index.html
+  template:
+    src: templates/index.html.j2
+    dest: "{{ build_dir_path }}/index.html"
+    mode: 0644
+
+- name: build container image
+  docker_image:
+    name: democontainer
+    build:
+      path: "{{ build_dir_path }}"
+    source: build
+    tag: v2.0
+    state: present
+    push: yes
